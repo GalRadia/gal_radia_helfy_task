@@ -1,12 +1,13 @@
 export type Priority = 'low' | 'medium' | 'high';
 export type Filter = 'all' | 'completed' | 'pending';
+export type SortOption = 'newest' | 'oldest' | 'priority' | 'title';
 
 export interface Task {
   id: number;
   title: string;
   description: string;
   completed: boolean;
-  createdAt: string; // arrives as an ISO string over JSON, not a Date instance
+  createdAt: string; 
   priority: Priority;
   dueDate?: string;
 }

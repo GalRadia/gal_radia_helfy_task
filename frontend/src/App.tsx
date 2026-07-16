@@ -8,19 +8,22 @@ import {
   deleteTask,
   toggleTask,
 } from "./services/api";
-import { Task, TaskFormValues, Filter, Priority } from "./types";
+import { Task, TaskFormValues, Filter, Priority, SortOption } from "./types";
 
 import "./styles/App.css";
 import TaskFilter from "./components/TaskFilter";
 import TaskCarousel from "./components/TaskCarousel";
 
+const PRIORITY_WEIGHT: Record<Priority, number> = { high: 3, medium: 2, low: 1 };
 
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-  const [filter, setFilter] = useState<Filter>('all');
+  const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState<string>("");
+  const [sort, setSort] = useState<SortOption>("newest");
   const [editingId, setEditingId] = useState<number | null>(null);
   function load(): void {
     setLoading(true);
@@ -68,7 +71,17 @@ export default function App() {
     }
   }
 
-  
+  const visibleTasks: Task[] = tasks
+  .filter((t) => (filter === 'all' ? true : filter === 'completed' ? t.completed : !t.completed))
+  .filter((t) => `${t.title} ${t.description}`.toLowerCase().includes(search.toLowerCase()))
+  .sort((a, b) => {
+    if (sort === 'title') return a.title.localeCompare(b.title);
+    if (sort === 'priority') return PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority];
+    const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    return sort === 'newest' ? diff : -diff;
+  });
+
+
   const editingTask: Task | undefined = tasks.find((t) => t.id === editingId);
   return (
     <div className="App">
@@ -85,9 +98,26 @@ export default function App() {
       ) : (
         <TaskForm onSubmit={handleCreate} />
       )}
-        <div className="filter-row">
+      <div className="toolbar">
+        <input
+          className="search-input"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search tasks…"
+        />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortOption)}
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="priority">Priority</option>
+          <option value="title">Title</option>
+        </select>
+      </div>
+      <div className="filter-row">
         <TaskFilter value={filter} onChange={setFilter} />
-        </div>
+      </div>
 
       {loading && <p>Loading tasks...</p>}
       {error && (
@@ -97,7 +127,7 @@ export default function App() {
         </div>
       )}
       <TaskCarousel
-        tasks={tasks}
+        tasks={visibleTasks}
         onEdit={(id) => setEditingId(id)}
         onDelete={handleDelete}
         onToggle={handleToggle}
