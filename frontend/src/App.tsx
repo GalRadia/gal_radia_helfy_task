@@ -11,11 +11,16 @@ import {
 import { Task, TaskFormValues, Filter, Priority } from "./types";
 
 import "./styles/App.css";
+import TaskFilter from "./components/TaskFilter";
+import TaskCarousel from "./components/TaskCarousel";
+
+
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [filter, setFilter] = useState<Filter>('all');
   const [editingId, setEditingId] = useState<number | null>(null);
   function load(): void {
     setLoading(true);
@@ -62,6 +67,8 @@ export default function App() {
       setError("Could not delete task.");
     }
   }
+
+  
   const editingTask: Task | undefined = tasks.find((t) => t.id === editingId);
   return (
     <div className="App">
@@ -78,6 +85,10 @@ export default function App() {
       ) : (
         <TaskForm onSubmit={handleCreate} />
       )}
+        <div className="filter-row">
+        <TaskFilter value={filter} onChange={setFilter} />
+        </div>
+
       {loading && <p>Loading tasks...</p>}
       {error && (
         <div className="error-banner">
@@ -85,7 +96,7 @@ export default function App() {
           <button onClick={load}>Retry</button>
         </div>
       )}
-      <TaskList
+      <TaskCarousel
         tasks={tasks}
         onEdit={(id) => setEditingId(id)}
         onDelete={handleDelete}
