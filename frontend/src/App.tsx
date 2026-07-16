@@ -8,7 +8,7 @@ import {
   deleteTask,
   toggleTask,
 } from "./services/api";
-import { Task, TaskFormValues, Filter, Priority, SortOption } from "./types";
+import { Task, TaskFormValues, Filter, Priority, SortOption, Theme } from "./types";
 
 import "./styles/App.css";
 import TaskFilter from "./components/TaskFilter";
@@ -23,8 +23,16 @@ export default function App() {
   const [error, setError] = useState<string>("");
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState<string>("");
+  const [theme, setTheme] = useState<Theme>('light');
   const [sort, setSort] = useState<SortOption>("newest");
   const [editingId, setEditingId] = useState<number | null>(null);
+
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+
   function load(): void {
     setLoading(true);
     fetchTasks()
@@ -84,10 +92,12 @@ export default function App() {
 
   const editingTask: Task | undefined = tasks.find((t) => t.id === editingId);
   return (
-    <div className="App">
+    <div className="App" >
       <div className="app-header">
-        <h1>Task Manager</h1>
-      </div>
+          <h1>Task Manager</h1>
+        <button onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}>
+          {theme === 'light' ? 'Dark' : 'Light'}
+        </button>      </div>
       {editingTask ? (
         <TaskForm
           key={editingTask.id}
