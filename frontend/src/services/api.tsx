@@ -42,13 +42,9 @@ export async function deleteTask(id: number): Promise<void> {
     throw new Error('Failed to delete task');
   }
 }
-export async function toggleTaskCompletion(id: number, completed: boolean): Promise<Task> {
+export async function toggleTask(id: number): Promise<Task> {
   const response = await fetch(`${BASE_URL}/${id}/toggle`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ completed }),
   });
   if (!response.ok) {
     throw new Error('Failed to toggle task completion');

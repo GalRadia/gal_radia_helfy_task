@@ -1,26 +1,96 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import TaskForm from "./components/TaskForm";
+import TaskList from "./components/TaskList";
+import {
+  fetchTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+  toggleTask,
+} from "./services/api";
+import { Task, TaskFormValues, Filter, Priority } from "./types";
 
-function App() {
+import "./styles/App.css";
+
+export default function App() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  function load(): void {
+    setLoading(true);
+    fetchTasks()
+      .then(setTasks)
+      .catch(() => setError("Could not load tasks. Is the backend running?"))
+      .finally(() => setLoading(false));
+  }
+  useEffect(load, []);
+  async function handleCreate(values: TaskFormValues): Promise<void> {
+    try {
+      await createTask(values);
+      load();
+    } catch {
+      setError("Could not create task.");
+    }
+  }
+
+  async function handleUpdate(values: TaskFormValues): Promise<void> {
+    if (editingId == null) return;
+    try {
+      await updateTask(editingId, values);
+      setEditingId(null);
+      load();
+    } catch {
+      setError("Could not update task.");
+    }
+  }
+
+  async function handleToggle(id: number): Promise<void> {
+    try {
+      await toggleTask(id);
+      load();
+    } catch {
+      setError("Could not update task.");
+    }
+  }
+
+  async function handleDelete(id: number): Promise<void> {
+    try {
+      await deleteTask(id);
+      load();
+    } catch {
+      setError("Could not delete task.");
+    }
+  }
+  const editingTask: Task | undefined = tasks.find((t) => t.id === editingId);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="app-header">
+        <h1>Task Manager</h1>
+      </div>
+      {editingTask ? (
+        <TaskForm
+          key={editingTask.id}
+          initial={editingTask}
+          onSubmit={handleUpdate}
+          onCancel={() => setEditingId(null)}
+        />
+      ) : (
+        <TaskForm onSubmit={handleCreate} />
+      )}
+      {loading && <p>Loading tasks...</p>}
+      {error && (
+        <div className="error-banner">
+          <span>{error}</span>
+          <button onClick={load}>Retry</button>
+        </div>
+      )}
+      <TaskList
+        tasks={tasks}
+        onEdit={(id) => setEditingId(id)}
+        onDelete={handleDelete}
+        onToggle={handleToggle}
+      />
     </div>
   );
 }
-
-export default App;
