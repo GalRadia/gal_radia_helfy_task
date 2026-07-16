@@ -69,6 +69,12 @@ Any unmatched route returns `404 { "error": "not found" }`.
 
 - `description` and `priority` are optional on create and default to `''` and `'medium'` respectively; `title` is required.
 - Validation is minimal (matches the assignment's scope) — the API trusts well-formed input from the bundled frontend rather than implementing exhaustive server-side validation.
+## Time spent
+- Design and read about coursel ~ 1 hour
+- Backend ~30 min
+- Frontend ~1 hours
+- CSS ~45 min
+- Bonuses 30 min
 
 ## Screenshots
 <img width="1265" height="1055" alt="image" src="https://github.com/user-attachments/assets/f31d97e2-125d-4d46-a9be-7ed43bb2865b" />
